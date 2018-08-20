@@ -15,9 +15,9 @@ class dq:
         stream = open(path, 'r')
         self.yml = load(stream)
         return self.yml
-    
+
     def loadYml(self, yml):
-        self.yml = {**self.yml, **yml}
+        self.yml = yml if self.yml is None else df.merge(yml, self.yml)
     
     def datasource(self, name):
         return self.yml['datasource'][name]

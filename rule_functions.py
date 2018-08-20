@@ -1,5 +1,7 @@
 import pandas as pd
 from itertools import chain
+import numpy as np
+import re
 
 tuple_to_str = lambda t: ', '.join(map(str, t)) if isinstance(t, tuple) else str(t)
 add_lambda = lambda a: 'r[\'' + str(a) + '\']'

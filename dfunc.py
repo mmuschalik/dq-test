@@ -7,7 +7,7 @@ def getRuleLambda(rule):
     funcName = rule['type'] if 'type' in rule else 'udf'
     for key, value in rule.items():
         if key not in ['type','description','dataset', 'points', 'keywords','filter']:
-            res.append(key + '=' + ("'" + value + "'" if isinstance(value, str) else str(value)))
+            res.append(key + '=' + ('"' + value + '"' if isinstance(value, str) else str(value)))
     
     return eval('lambda d: rf.' + funcName + '(data=d, ' + ', '.join(res) + ')')
 
@@ -18,6 +18,11 @@ def filter(data, expr):
     return data[eval("lambda " + expr.replace('->',': '))(data)]
 
 
-
-
-
+def merge(source, destination):
+    for key, value in source.items():
+        if isinstance(value, dict):
+            node = destination.setdefault(key, {})
+            merge(value, node)
+        else:
+            destination[key] = value
+    return destination
