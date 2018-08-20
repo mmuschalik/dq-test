@@ -1,17 +1,27 @@
 import pandas as pd
+import rule_functions as rf
 
 
-def occurancePercentile(data, field, percentile):
-    vc = data[field].value_counts()
-    limit = vc.quantile(percentile)
-    return data.apply(lambda d: 0 if vc.loc[d[field]] >= limit else 1, axis=1)
-
-def isDuplicate(data, fields):
-    dup = data.duplicated(fields, keep='first')
-    return dup.apply(lambda d: 0 if d == True else 1)
+def getRuleLambda(rule):
+    res = []
+    funcName = rule['type']
+    for key, value in rule.items():
+        if key not in ['type','description','dataset', 'points', 'keywords','filter']:
+            res.append(key + '=' + ("'" + value + "'" if isinstance(value, str) else str(value)))
+    print('lambda d: rf.' + funcName + '(data=d, ' + ', '.join(res) + ')')
+    return eval('lambda d: rf.' + funcName + '(data=d, ' + ', '.join(res) + ')')
 
 def apply(data, expr):
     return data.apply(eval("lambda " + expr), axis=1)
 
 def filter(data, expr):
-    return data[eval("lambda " + expr.replace('->',': '))(data)]
+    data_copy = data.copy()
+    return data_copy[eval("lambda " + expr.replace('->',': '))(data_copy)]
+
+
+
+
+
+
+
+

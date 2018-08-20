@@ -1,12 +1,51 @@
+datasource:
+  myfile:
+    type: csv
+    url: titanic.csv
+
+dataset:
+  titanic:
+    query: titanic.csv
+    datasource: myfile
+    id: r -> r.PassengerId
+
+function:
+  notNullOrBlank: &notNullOrBlank 
+    description: Element should not be null or blank.
+    expression: a -> 0 if a is None or pd.isna(a) else 1
+    max: 1
 
 analysis:
   a1: 
     type: occurancePercentile
-    description: Exclude any values where the occurance percentile is large
+    description: Fail any values where the occurance percentile is large
     dataset: titanic
     field: Sex
+    filter: r -> r.Survived == 1
     percentile: 0.9
     points: 10
     keywords:
+      Data_Quality_Dimension: Accuracy
+  
+  a2: 
+    type: uniqueness
+    description: Test uniqueness of name and sex
+    dataset: titanic
+    fields:
+      - Name
+      - Sex
+    points: 10
+    keywords:
+      Data_Quality_Dimension: Accuracy
+  
+  a3: 
+    type: udf
+    description: Test that age is not null
+    dataset: titanic
+    bind: r -> r.Age
+    function: *notNullOrBlank
+    points: 10
+    keywords:
         Data_Quality_Dimension: Accuracy
-        Owner: Michael
+
+
