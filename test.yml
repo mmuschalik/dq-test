@@ -1,0 +1,12 @@
+
+analysis:
+  a1: 
+    type: occurancePercentile
+    description: Exclude any values where the occurance percentile is large
+    dataset: titanic
+    field: Sex
+    percentile: 0.9
+    points: 10
+    keywords:
+        Data_Quality_Dimension: Accuracy
+        Owner: Michael
