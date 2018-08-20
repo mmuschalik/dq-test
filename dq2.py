@@ -59,5 +59,5 @@ class dq:
 mydq = dq()
 yml = mydq.loadYmlFile('test.yml')
 mydq.extractDataset('titanic')
-print(mydq.executeRule('a1'))
+print(mydq.executeRule('a4'))
 
