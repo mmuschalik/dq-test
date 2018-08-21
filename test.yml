@@ -2,6 +2,11 @@ datasource:
   myfile:
     type: csv
     url: titanic.csv
+    keywords:
+      system: Titanic
+  Result:
+    type: sql
+    url: mssql+pyodbc://localhost/mydb?driver=SQL+Server+Native+Client+10.0;trusted_connection=yes
 
 dataset:
   titanic:
@@ -29,6 +34,8 @@ analysis:
     field: Sex
     filter: r -> r.Survived == 1
     percentile: 0.9
+    keywords:
+      data_quality_dimension: Accuracy
   
   a2: 
     type: uniqueness
