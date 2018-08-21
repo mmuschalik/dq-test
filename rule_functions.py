@@ -22,6 +22,28 @@ def occurancePercentile(data, field, percentile):
 
     return res
 
+def aboveNormalFrequency(data, field, stdeviations, threshold):
+    res = pd.DataFrame()
+    
+    freq = data[field].value_counts()
+    freq = freq[freq > 2]
+    
+    mean = freq.mean()
+    std  = freq.std()
+    limit = mean + (std * stdeviations)
+    
+    print(mean)
+    
+    exceptions = freq[freq > limit]
+    exceptions = limit / exceptions
+    exceptions = exceptions[exceptions < threshold]
+    
+    res['selector'] = data[field]
+    res['value'] = [exceptions[x] if x in exceptions else 1 for x in data[field]]
+    res['total_value'] = 1
+    
+    return res
+
 def uniqueness(data, fields):
     res = pd.DataFrame()
     

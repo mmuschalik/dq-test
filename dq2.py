@@ -6,6 +6,16 @@ from yaml import load, dump
 from sqlalchemy import create_engine
 import datetime
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 class dq:
 
     yml = None
@@ -42,7 +52,8 @@ class dq:
 
     def showFails(self, rule_name):
         ret = self.executeRule(rule_name)
-        return ret[ret.value == 0]
+        agg = pd.concat([ret,self.data], axis=1, sort=False)[ret.columns.values.tolist() + self.data.columns.values.tolist()]
+        return agg[~agg.value.isin([1,np.nan])]
     
     def executeRule(self, rule_name, add_keywords=False):
         rule = self.rule(rule_name)
@@ -74,6 +85,11 @@ class dq:
 
             for key, value in keywords.items():
                 res[key] = value
+
+        print(bcolors.BOLD + bcolors.WARNING + "Test Results:")
+        print(res['value'].replace({1:'Pass',0:'Fail',np.nan:'Excluded'}).value_counts(dropna=False))
+        print(bcolors.ENDC + "\nTop Failures:")
+        print(res[~res.value.isin([1,np.nan])].selector.value_counts(dropna=False).head(20))
 
         return res
 
