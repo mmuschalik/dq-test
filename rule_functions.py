@@ -22,6 +22,34 @@ def occurancePercentile(data, field, percentile):
 
     return res
 
+def whiteblacklist(data, list, bind, function):
+    res = pd.DataFrame()
+    
+    nbind = bind + ', [' + ', '.join(str(list)) + ']'
+    fn = function['expression'].replace('->',': ')
+    value = nbind.replace('->', ': (lambda ' + fn + ')(') + ')'
+    selector = bind.replace('->', ': tuple_to_str((') + '))'
+
+    res['selector'] = data.apply(eval("lambda " + selector), axis=1)
+    res['value'] = data.apply(eval("lambda " + value), axis=1)
+    res['total_value'] = function['max']
+
+    return res
+
+def regex(data, bind, regex, regexType):
+    res = pd.DataFrame()
+    
+    fn = ("a -> 1 if a is None or pd.isna(a) or (isinstance(a, str) and (a.strip()=='' or re.search(r'" + regex + "', a))) else 0").replace('->',': ')
+    value = bind.replace('->', ': (lambda ' + fn + ')(') + ')'
+    selector = bind.replace('->', ': tuple_to_str((') + '))'
+
+    res['selector'] = data.apply(eval("lambda " + selector), axis=1)
+    res['value'] = data.apply(eval("lambda " + value), axis=1)
+    res['total_value'] = 1
+
+    return res
+
+
 def aboveNormalFrequency(data, field, stdeviations, threshold):
     res = pd.DataFrame()
     

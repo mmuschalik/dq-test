@@ -41,13 +41,19 @@ class dq:
     def rule(self, name):
         res = self.yml['analysis'][name]
 
-        if 'function' in res:
+        if 'function' in res and isinstance(res['function'],str):
             res['function'] = self.yml['function'][res['function']]
         return res
 
     def extractDataset(self, dataset_name):
         self.dset = self.dataset(dataset_name)
-        self.data = pd.read_csv(self.datasource(self.dset['datasource'])['url'], index_col=False, parse_dates=[0])
+        dsource = self.datasource(self.dset['datasource'])
+
+        if dsource['type'] == 'sql':
+            engine = create_engine(dsource['url'])
+            self.data = pd.read_sql_query(self.dset['query'], con=engine)
+        else:
+            self.data = pd.read_csv(dsource['url'], index_col=False, parse_dates=[0])
         return self.data
 
     def showFails(self, rule_name):
