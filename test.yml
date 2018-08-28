@@ -44,15 +44,21 @@ analysis:
     fields:
       - Name
       - Sex
+    keywords:
+      data_quality_dimension: Blah
   
   a3: 
     description: Test that age is not null
     dataset: titanic
     bind: r -> r.Age
     function: notNullOrBlank
+    keywords:
+      data_quality_dimension: Accuracy
 
   a4:
     description: Test value range
     dataset: titanic
     bind: r -> r.Age
     function: valueRange
+    keywords:
+      data_quality_dimension: Accuracy

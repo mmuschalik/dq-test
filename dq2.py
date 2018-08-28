@@ -5,6 +5,7 @@ import yaml
 from yaml import load, dump
 from sqlalchemy import create_engine
 import datetime
+import csv
 
 class bcolors:
     HEADER = '\033[95m'
@@ -102,7 +103,8 @@ class dq:
     def commit(self, rule_name):
         result = self.executeRule(rule_name, True)
         result['execution_id'] = self.execution_id
-        result['execution_date'] = self.execution_date
+        #result['execution_date'] = self.execution_date
         engine = create_engine(self.yml['datasource']['Result']['url'])
         engine.execute("delete from row_analysis_history where analysis_name='" + rule_name + "'")
-        result.to_sql('row_analysis_history', con=engine, if_exists = 'append', chunksize=50, index=False)
+        #result.to_sql('row_analysis_history', con=engine, if_exists = 'append', chunksize=50, index=False)
+        result.to_csv('result.csv', sep='\t', index=False,  quoting=csv.QUOTE_NONE)

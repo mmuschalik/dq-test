@@ -25,7 +25,7 @@ def occurancePercentile(data, field, percentile):
 def whiteblacklist(data, list, bind, function):
     res = pd.DataFrame()
     
-    nbind = bind + ', [' + ', '.join(str(list)) + ']'
+    nbind = bind + ', ' + str(list)
     fn = function['expression'].replace('->',': ')
     value = nbind.replace('->', ': (lambda ' + fn + ')(') + ')'
     selector = bind.replace('->', ': tuple_to_str((') + '))'
