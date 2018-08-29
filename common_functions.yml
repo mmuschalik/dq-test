@@ -1,0 +1,151 @@
+function:
+    notNullOrBlank:
+        description: Element should not be null or blank.
+        expression: a -> 0 if a is None or pd.isna(a) or str(a) == "" else 1
+        max: 1
+        
+    isNullOrBlank:
+        description: Element should not be null or blank.
+        expression: a -> 1 if a is None or pd.isna(a) or str(a) == "" else 0
+        max: 1
+        
+    nameWithAllowablePunctuation:
+        description: Name tester that allows limited punctuation for abbreviaions
+        expression: a -> 1 if a is None or pd.isna(a) else (1 if isinstance(a, str) and re.match("^[A-Za-z&/,. -'’]*$", a) else 0)
+        max: 1
+        
+    nameWithAllowablePunctuationIncBrackets:
+        description: Name tester that allows limited punctuation for abbreviaions
+        expression: a -> 1 if a is None or pd.isna(a) else (1 if isinstance(a, str) and re.match("^[A-Za-z()&/,. -'’]*$", a) else 0)
+        max: 1
+        
+    nameExludedPunctuation:
+        description: Name tester that allows limited punctuation for abbreviaions
+        expression: a -> 1 if a is None or pd.isna(a) else 0 if re.search("[0-9~!@#$%^*+=|\\\/{}\\[\\]():;<>,.?]", a) else 1
+        max: 1
+        
+    nameExludedPunctuationIncBracket:
+        description: Name tester that allows limited punctuation for abbreviaions
+        expression: a -> 1 if a is None or pd.isna(a) else 0 if re.search("[0-9~!@#$%^*+=|\\\/{}\\[\\]:;<>,.?]", a) else 1
+        max: 1
+        
+    isnumeric:
+        description: Element should be numeric
+        expression: a -> None if a is None or pd.isna(a) else 1 if a.isnumeric() else 0
+        max: 1
+        
+    str_len:
+        description: String length tester
+        expression: a,b -> None if a is None or pd.isna(a) else (1 if isinstance(a, str) and len(a) >= b else 0)
+        max: 1
+        
+    str_haschar:
+        description: Address contains a street number
+        expression: a -> None if a is None or pd.isna(a) else (1 if isinstance(a, str) and re.search("[a-zA-Z]", a) else 0)
+        max: 1
+        
+    inPast:
+        description: Check a date is in the past
+        expression: a -> None if a is None or pd.isna(a) else 1 if pd.to_datetime(a, errors='coerce') <= pd.to_datetime('today') else 0
+        max: 1
+        
+    inFuture:
+        description: Check a date is in the past
+        expression: a -> None if a is None or pd.isna(a) else 1 if pd.to_datetime(a, errors='coerce') >= pd.to_datetime('today') else 0
+        max: 1
+        
+    notOlderThan:
+        description: Check an age is not older than
+        expression: a,b -> None if a is None or pd.isna(a) else 1 if ((pd.to_datetime('today') - pd.to_datetime(a, errors='coerce')).days / 365.25) < b else 0
+        max: 1
+        
+    maxYearsinFuture:
+        description: Check a date within a certain number of years
+        expression: a,b -> 1 if a is None or pd.isna(a) or ((pd.to_datetime(a, errors='coerce') - pd.to_datetime('today')).days / 365.25) < b else 0
+        max: 1
+        
+    atLeastOneVal:
+        description: One of the elements should be not null
+        expression: a -> 0 if all(elem is None for elem in a) else 1
+        max: 1
+        
+    validEmailStrict:
+        description: Email addresses should follow a standard pattern
+        expression: a -> None if a is None or pd.isna(a) else (1 if isinstance(a, str) and re.search("(\s*[a-zA-Z0-9_.+'-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+[,; ]*)+$",a) else 0)
+        max: 1
+        
+    validEmail:
+        description: Email addresses should follow a standard pattern
+        expression: a -> None if a is None or pd.isna(a) else (1 if isinstance(a, str) and re.search("[a-zA-Z0-9_.+'-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]",a) else 0)
+        max: 1
+        
+    doesNotContainEmail:
+        description: Address strings should not contain an email address
+        expression: a -> None if a is None or pd.isna(a) else (0 if isinstance(a, str) and re.search("[a-zA-Z0-9_.+'-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]",a) else 1)
+        max: 1
+        
+    validLandline:
+        description: Landline phones should consist of between 8 and 10 characters
+        expression: a -> None if a is None or pd.isna(a) else (1 if isinstance(a, str) and re.search("( *\d[- .]*){8,10}\\b", a) else 0)
+        max: 1
+        
+    validMobile:
+        description: Mobile phone numbers should have 8-10 characters and mobiles should start with 04 or 614
+        expression: a -> None if a is None or pd.isna(a) else (1 if isinstance(a, str) and re.search("(04|614)( *\d[- .]*){8}\\b", a) else 0)
+        max: 1
+
+# this has been depreciated in favor of the options below
+#     Blacklist:
+#         description: Elements not allowed
+#         expression: a,b -> 0 if any(a.find(elem) >= 0 for elem in b) else 1
+#         max: 1
+        
+    blacklist:
+        description: Only defined elements allowed
+        expression: a,b -> 0 if a in b else 1
+        max: 1
+        
+    blacklist_caseinsensitive:
+        description: Elements not allowed
+        expression: a,b -> 1 if a is None or pd.isna(a) or a.upper() not in b else 0
+        max: 1
+        
+    blacklist_contains:
+        description: Only defined elements allowed
+        expression: a,b -> None if a is None or pd.isna(a) else 0 if any(re.search("\\b" + re.escape(elem.upper()) + "\\b", a.upper()) for elem in b) else 1
+        max: 1
+        
+    blacklistTextExact:
+        description: Elements not allowed
+        expression: a,b -> 0 if a.upper() in b else 1
+        max: 1
+        
+    whitelist:
+        description: Only defined elements allowed
+        expression: a,b -> 1 if a in b else 0
+        max: 1
+        
+    address_str_haspostcode:
+        description: Address contains a four digit postcode string
+        expression: a -> None if a is None or pd.isna(a) or str(a) == "" else (1 if isinstance(a, str) and re.search("\\b[0-9]{4}\\b", a) else 0)
+        max: 1
+        
+    isAustralianPostcode_incPO:
+        description: Postcodes including PO
+        expression: a -> None if a is None or pd.isna(a) else 1 if str(a) in [('0'+str(p))[-4:] for p in list(range(200,300)) + list(range(800,6797)) + list(range(6800, 9999))] else 0
+        max: 1
+        
+    address_str_hasnumbers:
+        description: Address contains a street number
+        expression: a -> None if a is None or pd.isna(a) else (1 if isinstance(a, str) and re.search("[0-9]", a) else 0)
+        max: 1
+        
+    validABN_ACN:
+        description: Checkdigits for ACN and ABN must align
+        expression: a -> np.nan if a is None or pd.isna(a) else checkABN_ACN(a)
+        max: 1
+    
+    notAnyNullOrBlank:
+        description: One of the elements should be specified.
+        expression: a -> 0 if any(elem is None or pd.isna(elem) for elem in a) else 1
+        max: 1
