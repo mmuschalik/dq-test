@@ -27,7 +27,8 @@ class dq:
 
     def loadYmlFile(self, path):
         stream = open(path, 'r')
-        self.yml = load(stream)
+        yml = load(stream)
+        self.yml = yml if self.yml is None else df.merge(yml, self.yml)
         return self.yml
 
     def loadYml(self, yml):
