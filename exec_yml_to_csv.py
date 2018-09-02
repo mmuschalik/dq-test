@@ -1,6 +1,6 @@
 import dq2 as dq
 import csv
-import sys
+import sys, traceback
 import os
 import datetime
 import logging
@@ -50,7 +50,9 @@ for dkey, dvalue in yml['dataset'].items():
                     res.to_csv('data/' + dkey + '_' + rkey + '.csv', sep='\t', index=False, escapechar='\\',  quoting=csv.QUOTE_NONE)
                     logger.info('Results saved for rule: ' + rkey)
     
-                except Exception:
+                except:
+                    traceback.print_exc()
                     pass
-    except Exception:
+    except:
+        traceback.print_exc()
         pass

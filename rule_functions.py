@@ -95,3 +95,20 @@ def udf(data, bind, function):
     res['total_value'] = function['max']
 
     return res
+
+def integration(data, lookup, keys, match):
+    res = pd.DataFrame()
+
+    lookup = lookup.set_index(list(keys.keys()))
+
+    tup = lambda r: tuple(map( (lambda d: eval('lambda ' + d.replace('->',': ')))(r), keys.values())) if len(keys)>1 else eval('lambda ' + list(keys.values())[0].replace('->',': '))(r)
+
+    res['selector'] = data.apply(lambda r: tuple_to_str(tup(r)), axis=1)
+    res['value'] = data.apply(lambda r: 1 if tup(r) in lookup.index else 0, axis=1)
+
+    res['total_value'] = 1
+
+# ('a','3') in lookup.index
+# lookup.loc[('a','3')]
+
+    return res

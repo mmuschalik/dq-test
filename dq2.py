@@ -65,17 +65,30 @@ class dq:
     
     def executeRule(self, rule_name, add_keywords=False):
         rule = self.rule(rule_name)
-        r = df.getRuleLambda(rule)
+        #r = df.getRuleLambda(rule)
         
         if 'filter' in rule:
             input = df.filter(self.data, rule['filter'])
         else:
             input = self.data
 
+        datadict = {}
+        for krule, vrule in rule.items():
+            for kset, vset in self.yml['dataset'].items():
+                if(vrule == kset and krule != 'dataset'):
+                    ndq = dq()
+                    ndq.loadYml(self.yml)
+                    print('extracting ' + kset)
+                    ndq.extractDataset(kset)
+                    datadict[krule] = ndq.data
+
+        datadict['data'] = input
+        res = df.getRuleWithDataFrames(rule, datadict)
         # add source_id
-        res = r(input)
+        #    res = r(input)
+        
         update_to_list = lambda a: a if isinstance(a, list) else [a]
-        res['source_id'] = eval("+ ', ' +".join(map(lambda c: "input['" + c + "'].map(str)", update_to_list(self.dset['id']))))
+        res['source_id'] = eval("+ ', ' +".join(map(lambda c: "input['" + c + "'].map(str)", update_to_list(self.dset['id'])))).replace('\t',' ')
 
         # add keywords
         if add_keywords:
@@ -106,6 +119,6 @@ class dq:
         result['execution_id'] = self.execution_id
         #result['execution_date'] = self.execution_date
         engine = create_engine(self.yml['datasource']['Result']['url'])
-        engine.execute("delete from row_analysis_history where analysis_name='" + rule_name + "'")
+        engine.execute("delete from row_analysis_history where analysis_name='" + rule_name + "' and execution_id='" + self.execution_id + "'")
         #result.to_sql('row_analysis_history', con=engine, if_exists = 'append', chunksize=50, index=False)
         result.to_csv('result.csv', sep='\t', index=False,  quoting=csv.QUOTE_NONE)

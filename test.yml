@@ -1,64 +1,76 @@
 datasource:
-  myfile:
-    type: csv
-    url: titanic.csv
-    keywords:
-      system: Titanic
-  Result:
-    type: sql
-    url: mssql+pyodbc://localhost/mydb?driver=SQL+Server+Native+Client+10.0;trusted_connection=yes
+    myfile:
+        type: csv
+        url: titanic.csv
+        keywords:
+            system: Titanic
+    Result:
+        type: sql
+        url: mssql+pyodbc://localhost/mydb?driver=SQL+Server+Native+Client+10.0;trusted_connection=yes
 
 dataset:
-  titanic:
-    query: titanic.csv
-    datasource: myfile
-    id: 
-      - PassengerId
-      - Name
+    titanic:
+        query: titanic.csv
+        datasource: myfile
+        id: 
+            - PassengerId
+            - Name
 
 function:
-  notNullOrBlank: 
-    description: Element should not be null or blank.
-    expression: a -> 0 if a is None or pd.isna(a) else 1
-    max: 1
-  valueRange:
-    description: Element should have an accepted range of values
-    expression: a -> 1 if any(a == elem for elem in chain(range(1,10), range(30,40))) else 0
-    max: 1
+    notNullOrBlank: 
+        description: Element should not be null or blank.
+        expression: a -> 0 if a is None or pd.isna(a) else 1
+        max: 1
+    valueRange:
+        description: Element should have an accepted range of values
+        expression: a -> 1 if any(a == elem for elem in chain(range(1,10), range(30,40))) else 0
+        max: 1
 
 analysis:
-  a1: 
-    type: occurancePercentile
-    description: Fail any values where the occurance percentile is large
-    dataset: titanic
-    field: Sex
-    filter: r -> r.Survived == 1
-    percentile: 0.9
-    keywords:
-      data_quality_dimension: Accuracy
+    a1: 
+        type: occurancePercentile
+        description: Fail any values where the occurance percentile is large
+        dataset: titanic
+        field: Sex
+        filter: r -> r.Survived == 1
+        percentile: 0.9
+        keywords:
+            data_quality_dimension: Accuracy
   
-  a2: 
-    type: uniqueness
-    description: Test uniqueness of name and sex
-    dataset: titanic
-    fields:
-      - Name
-      - Sex
-    keywords:
-      data_quality_dimension: Blah
-  
-  a3: 
-    description: Test that age is not null
-    dataset: titanic
-    bind: r -> r.Age
-    function: notNullOrBlank
-    keywords:
-      data_quality_dimension: Accuracy
+    a2: 
+        type: uniqueness
+        description: Test uniqueness of name and sex
+        dataset: titanic
+        fields:
+        - Name
+        - Sex
+        keywords:
+            data_quality_dimension: Blah
+    
+    a3: 
+        description: Test that age is not null
+        dataset: titanic
+        bind: r -> r.Age
+        function: notNullOrBlank
+        keywords:
+            data_quality_dimension: Accuracy
 
-  a4:
-    description: Test value range
-    dataset: titanic
-    bind: r -> r.Age
-    function: valueRange
-    keywords:
-      data_quality_dimension: Accuracy
+    a4:
+        description: Test value range
+        dataset: titanic
+        bind: r -> r.Age
+        function: valueRange
+        keywords:
+            data_quality_dimension: Accuracy
+    
+    a5:
+        type: integration
+        description: Test value range
+        dataset: titanic
+        lookup: titanic
+        keys: 
+            PassengerId: r -> r.PassengerId
+        match: 
+            Description: r -> r.Description
+        keywords:
+            data_quality_dimension: Integrity
