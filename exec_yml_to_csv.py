@@ -40,7 +40,7 @@ for dkey, dvalue in yml['dataset'].items():
                 try:
 
                     logger.info('Executing Rule: ' + rkey + '...')
-                    res = analysis.executeRule(rkey, True)
+                    res = analysis.executeRule(rkey, True, verbose=False)
                     logger.info('Finished executing Rule: ' + rkey)
 
                     res['execution_id'] = "RUN" + str(runid)
