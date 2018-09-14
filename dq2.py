@@ -108,9 +108,10 @@ class dq:
 
         print(bcolors.BOLD + bcolors.WARNING + "Test Results:")
         print(res['value'].replace({1:'Pass',0:'Fail',np.nan:'Excluded'}).value_counts(dropna=False))
+        print(bcolors.ENDC)
 
         if verbose:
-            print(bcolors.ENDC + "\nTop Failures:")
+            print("Top Failures:")
             print(res[~res.value.isin([1,np.nan])].selector.value_counts(dropna=False).head(20))
 
         return res
