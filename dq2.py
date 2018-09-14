@@ -21,6 +21,7 @@ class dq:
 
     yml = None
     dset = None
+    dset_name = ''
     data = pd.DataFrame()
     execution_id = "RUN003"
     execution_date = datetime.datetime.now()
@@ -49,6 +50,7 @@ class dq:
 
     def extractDataset(self, dataset_name):
         self.dset = self.dataset(dataset_name)
+        self.dset_name = dataset_name
         dsource = self.datasource(self.dset['datasource'])
 
         if dsource['type'] == 'sql':
@@ -122,3 +124,35 @@ class dq:
         engine.execute("delete from row_analysis_history where analysis_name='" + rule_name + "' and execution_id='" + self.execution_id + "'")
         #result.to_sql('row_analysis_history', con=engine, if_exists = 'append', chunksize=50, index=False)
         result.to_csv('result.csv', sep='\t', index=False,  quoting=csv.QUOTE_NONE)
+
+    def exportRules(self):
+        exportData = self.data.copy()
+        writer = pd.ExcelWriter(self.dset_name + '_export.xls')
+        tabs = {}
+        summary = pd.DataFrame(columns=['Rule Name', 'Rule Description', 'Failed Records'])
+        row = 0
+
+        for rkey in self.yml['analysis'].keys():
+            if(self.yml['analysis'][rkey]['dataset'] == self.dset_name):
+                try:
+                    res = self.executeRule(rkey, False)
+                    exportData[rkey] = res['value']
+                    tab_fail = res[~res.value.isin([1,np.nan])][['selector']]
+                    tab = pd.concat([tab_fail, self.data], axis=1, join='inner').fillna('')
+                    tabs[rkey] = tab
+                    summary.loc[row] = [rkey,self.rule(rkey)['description'],len(tab)]
+                    row = row + 1
+                except:
+                    pass
+
+        summary.to_excel(writer, 'Summary', index=False)
+        exportData.to_excel(writer,'All (Detail)', index=False)
+
+        for n,t in tabs.items():
+            print(n)
+            if(len(t)>0):
+                t.to_excel(writer, n[0:30], index=False)
+
+        writer.save()
+        return exportData
+

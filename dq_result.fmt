@@ -1,5 +1,5 @@
 14.0
-13
+14
 1       SQLCHAR             0       200     "\t"   12    selector                                         Latin1_General_CI_AS
 2       SQLCHAR             0       19      "\t"   15    value                                            ""
 3       SQLCHAR             0       19      "\t"   16    total_value                                      ""
@@ -11,5 +11,6 @@
 9       SQLCHAR             0       100     "\t"   26    source                                           Latin1_General_CI_AS
 10      SQLCHAR             0       100     "\t"   27    conceptual_entity                                Latin1_General_CI_AS
 11      SQLCHAR             0       200     "\t"   18    data_quality_dimension                           Latin1_General_CI_AS
-12      SQLCHAR             0       30      "\t"   1     execution_id                                     Latin1_General_CI_AS
-13      SQLCHAR             0       8       "\r\n" 2     execution_date                                   ""
+12      SQLCHAR             0       200     "\t"   28    analysis_category                                Latin1_General_CI_AS
+13      SQLCHAR             0       30      "\t"   1     execution_id                                     Latin1_General_CI_AS
+14      SQLCHAR             0       8       "\r\n" 2     execution_date                                   ""
