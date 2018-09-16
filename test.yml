@@ -6,7 +6,7 @@ datasource:
             system: Titanic
     Result:
         type: sql
-        url: mssql+pyodbc://localhost/mydb?driver=SQL+Server+Native+Client+10.0;trusted_connection=yes
+        url: postgresql+psycopg2://postgres:actio@localhost/mydb
 
 dataset:
     titanic:
@@ -42,8 +42,8 @@ analysis:
         description: Test uniqueness of name and sex
         dataset: titanic
         fields:
-        - Name
-        - Sex
+            - Name
+            - Sex
         keywords:
             data quality dimension: Blah
     

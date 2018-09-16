@@ -41,11 +41,7 @@ class dq:
         return self.yml['dataset'][name]
 
     def rule(self, name):
-        res = self.yml['analysis'][name]
-
-        if 'function' in res and isinstance(res['function'],str):
-            res['function'] = self.yml['function'][res['function']]
-        return res
+        return self.yml['analysis'][name]
 
     def extractDataset(self, dataset_name):
         self.dset = self.dataset(dataset_name)

@@ -23,8 +23,8 @@ prefix = os.path.basename(path).replace('.yml','')
 
 engine = create_engine(yml['datasource']['Result']['url'])
 conn = engine.connect()
-conn.execute("insert into dbo.run (description) values (null)")
-runid = conn.execute("select max(id) as runid from dbo.run").fetchone()['runid']
+conn.execute("insert into run (description) values (null)")
+runid = conn.execute("select max(id) as runid from run").fetchone()['runid']
 
 for dkey, dvalue in yml['dataset'].items():
 

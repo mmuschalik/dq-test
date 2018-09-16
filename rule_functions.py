@@ -22,17 +22,17 @@ def occurancePercentile(data, field, percentile):
 
     return res
 
-def whiteblacklist(data, list, bind, function):
+def whiteblacklist(data, list, bind, expression, max):
     res = pd.DataFrame()
     
     nbind = bind + ', ' + str(list)
-    fn = function['expression'].replace('->',': ')
+    fn = expression.replace('->',': ')
     value = nbind.replace('->', ': (lambda ' + fn + ')(') + ')'
     selector = bind.replace('->', ': tuple_to_str((') + '))'
 
     res['selector'] = data.apply(eval("lambda " + selector), axis=1)
     res['value'] = data.apply(eval("lambda " + value), axis=1)
-    res['total_value'] = function['max']
+    res['total_value'] = max
 
     return res
 
@@ -83,16 +83,16 @@ def uniqueness(data, fields):
 
     return res
 
-def udf(data, bind, function):
+def udf(data, bind, expression, max):
     res = pd.DataFrame()
 
-    fn = function['expression'].replace('->',': ')
+    fn = expression.replace('->',': ')
     value = bind.replace('->', ': (lambda ' + fn + ')(') + ')'
     selector = bind.replace('->', ': tuple_to_str((') + '))'
 
     res['selector'] = data.apply(eval("lambda " + selector), axis=1)
     res['value'] = data.apply(eval("lambda " + value), axis=1)
-    res['total_value'] = function['max']
+    res['total_value'] = max
 
     return res
 
