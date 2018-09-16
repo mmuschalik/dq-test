@@ -96,7 +96,7 @@ def udf(data, bind, function):
 
     return res
 
-def integration(data, lookup, keys, match):
+def integration(data, lookup, keys, match = {}):
     res = pd.DataFrame()
 
     lookup = lookup.set_index(list(keys.keys()))
