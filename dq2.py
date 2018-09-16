@@ -29,8 +29,7 @@ class dq:
     def loadYmlFile(self, path):
         stream = open(path, 'r')
         yml = load(stream)
-        self.yml = yml if self.yml is None else df.merge(yml, self.yml)
-        return self.yml
+        self.loadYml(yml)
 
     def loadYml(self, yml):
         self.yml = yml if self.yml is None else df.merge(yml, self.yml)
@@ -42,11 +41,7 @@ class dq:
         return self.yml['dataset'][name]
 
     def rule(self, name):
-        res = self.yml['analysis'][name]
-
-        if 'function' in res and isinstance(res['function'],str):
-            res['function'] = self.yml['function'][res['function']]
-        return res
+        return self.yml['analysis'][name]
 
     def extractDataset(self, dataset_name):
         self.dset = self.dataset(dataset_name)
@@ -65,9 +60,8 @@ class dq:
         agg = pd.concat([ret,self.data], axis=1, sort=False)[ret.columns.values.tolist() + self.data.columns.values.tolist()]
         return agg[~agg.value.isin([1,np.nan])]
     
-    def executeRule(self, rule_name, add_keywords=False):
+    def executeRule(self, rule_name, add_keywords=False, verbose=True):
         rule = self.rule(rule_name)
-        #r = df.getRuleLambda(rule)
         
         if 'filter' in rule:
             input = df.filter(self.data, rule['filter'])
@@ -76,7 +70,7 @@ class dq:
 
         datadict = {}
         for krule, vrule in rule.items():
-            for kset, vset in self.yml['dataset'].items():
+            for kset in self.yml['dataset'].keys():
                 if(vrule == kset and krule != 'dataset'):
                     ndq = dq()
                     ndq.loadYml(self.yml)
@@ -85,10 +79,9 @@ class dq:
                     datadict[krule] = ndq.data
 
         datadict['data'] = input
-        res = df.getRuleWithDataFrames(rule, datadict)
-        # add source_id
-        #    res = r(input)
+        res = df.getRuleWithDataFrames(rule, datadict, self.yml, rule_name)
         
+        # add source_id
         update_to_list = lambda a: a if isinstance(a, list) else [a]
         res['source_id'] = eval("+ ', ' +".join(map(lambda c: "input['" + c + "'].map(str)", update_to_list(self.dset['id'])))).replace('\t',' ')
 
@@ -107,17 +100,20 @@ class dq:
                 keywords.update(rule['keywords'])
 
             for key, value in keywords.items():
-                res[key] = value
+                res[key.replace(' ', '_')] = value
 
         print(bcolors.BOLD + bcolors.WARNING + "Test Results:")
         print(res['value'].replace({1:'Pass',0:'Fail',np.nan:'Excluded'}).value_counts(dropna=False))
-        print(bcolors.ENDC + "\nTop Failures:")
-        print(res[~res.value.isin([1,np.nan])].selector.value_counts(dropna=False).head(20))
+        print(bcolors.ENDC)
+
+        if verbose:
+            print("Top Failures:")
+            print(res[~res.value.isin([1,np.nan])].selector.value_counts(dropna=False).head(20))
 
         return res
 
     def commit(self, rule_name):
-        result = self.executeRule(rule_name, True)
+        result = self.executeRule(rule_name, True, verbose=False)
         result['execution_id'] = self.execution_id
         #result['execution_date'] = self.execution_date
         engine = create_engine(self.yml['datasource']['Result']['url'])
@@ -156,3 +152,6 @@ class dq:
         writer.save()
         return exportData
 
+    def saveAs(self, file_name):
+        with open(file_name, 'w') as yaml_file:
+            yaml.dump(self.yml, yaml_file, default_flow_style=False)
