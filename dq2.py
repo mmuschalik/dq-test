@@ -3,9 +3,11 @@ import dfunc as df
 import numpy as np
 import yaml
 from yaml import load, dump
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 import datetime
 import csv
+import time
+from urllib.parse import quote_plus
 
 class bcolors:
     HEADER = '\033[95m'
@@ -62,6 +64,8 @@ class dq:
     
     def executeRule(self, rule_name, add_keywords=False, verbose=True):
         rule = self.rule(rule_name)
+
+        print(bcolors.BOLD + bcolors.UNDERLINE + bcolors.HEADER + "Executing Rule: " + rule_name + bcolors.ENDC)
         
         if 'filter' in rule:
             input = df.filter(self.data, rule['filter'])
@@ -102,24 +106,49 @@ class dq:
             for key, value in keywords.items():
                 res[key.replace(' ', '_')] = value
 
-        print(bcolors.BOLD + bcolors.WARNING + "Test Results:")
-        print(res['value'].replace({1:'Pass',0:'Fail',np.nan:'Excluded'}).value_counts(dropna=False))
+        print(bcolors.BOLD + bcolors.HEADER + "Result:")
+        print(bcolors.WARNING + res['value'].replace({1:'Pass',0:'Fail',np.nan:'Excluded'}).value_counts(dropna=False).to_string())
         print(bcolors.ENDC)
 
         if verbose:
             print("Top Failures:")
-            print(res[~res.value.isin([1,np.nan])].selector.value_counts(dropna=False).head(20))
+            print(res[~res.value.isin([1,np.nan])].selector.value_counts(dropna=False).head(20).to_string())
 
         return res
 
     def commit(self, rule_name):
-        result = self.executeRule(rule_name, True, verbose=False)
+        s = time.time()
+        result = self.executeRule(rule_name, True)
+        print('\nQueried in  ' + str((time.time() - s)/60) + ' minutes')
         result['execution_id'] = self.execution_id
-        #result['execution_date'] = self.execution_date
+        result['execution_date'] = self.execution_date
+        
         engine = create_engine(self.yml['datasource']['Result']['url'])
-        engine.execute("delete from row_analysis_history where analysis_name='" + rule_name + "' and execution_id='" + self.execution_id + "'")
-        #result.to_sql('row_analysis_history', con=engine, if_exists = 'append', chunksize=50, index=False)
-        result.to_csv('result.csv', sep='\t', index=False,  quoting=csv.QUOTE_NONE)
+        
+        @event.listens_for(engine, 'before_cursor_execute')
+        def receive_before_cursor_execute(conn, cursor, statement, params, context, executemany):
+            if executemany:
+                cursor.fast_executemany = True
+                
+        s = time.time()
+        #result.to_sql('row_analysis_history', con=engine, if_exists = 'append', chunksize = None, index=False)
+        result.to_sql('row_analysis_history', con=engine, if_exists = 'append', chunksize=50, index=False)
+        print('Uploaded in ' + str((time.time() - s)/60) + ' minutes')
+
+        
+    def executeAll(self, yml):
+        for x in yml['analysis']:
+            ret = self.executeRule(x)
+            print('\n')
+            
+    def clearResultsForSystem(self, systemname):
+        engine = create_engine(self.yml['datasource']['Result']['url'])
+        engine.execute("delete from row_analysis_history where system='" + systemname + "'")
+            
+    def commitAll(self, yml):
+        for x in yml['analysis']:
+            self.commit(x)
+            print('\n')
 
     def exportRules(self):
         exportData = self.data.copy()

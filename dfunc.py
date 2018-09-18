@@ -27,11 +27,13 @@ def getRuleWithDataFrames(rule, dict, yml, rule_name):
     if('rule_name' in inspect.signature(eval("rf." + funcName)).parameters.keys()):
         res.append("rule_name=rule_name")
 
+    rule_function = {}
+
     if 'function' in rule:
-        for key, value in yml['function'][rule['function']].items():
+        rule_fuction = yml['function'][rule['function']]
+        for key, value in rule_fuction.items():
             if key != 'description':
-                res.append(key + '=' + ('"' + value +
-                                        '"' if isinstance(value, str) else str(value)))
+                res.append(key + "= rule_fuction['" + key + "']")
 
     for key in dict.keys():
         res.append(key + '=' + 'dict[\'' + key + '\']')
