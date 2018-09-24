@@ -154,7 +154,7 @@ class dq:
         exportData = self.data.copy()
         writer = pd.ExcelWriter(self.dset_name + '_export.xls')
         tabs = {}
-        summary = pd.DataFrame(columns=['Rule Name', 'Rule Description', 'Failed Records'])
+        summary = pd.DataFrame(columns=['Rule Name', 'Rule Description', 'Failed Records', 'Total Records', 'Percent'])
         row = 0
 
         for rkey in self.yml['analysis'].keys():
@@ -162,16 +162,18 @@ class dq:
                 try:
                     res = self.executeRule(rkey, False)
                     exportData[rkey] = res['value']
-                    tab_fail = res[~res.value.isin([1,np.nan])][['selector']]
-                    tab = pd.concat([tab_fail, self.data], axis=1, join='inner').fillna('')
+                    res['pass/fail'] = res['value'].apply(lambda r: 'fail' if r == 0  else 'pass')
+                    failed_records = len(res[res['value'] == 0])
+                    tota_records = len(res)
+                    tab = res[['selector','pass/fail']].groupby(['selector','pass/fail']).size().reset_index(name='counts').sort_values(['pass/fail','counts'],ascending=[True,False]).fillna('')
                     tabs[rkey] = tab
-                    summary.loc[row] = [rkey,self.rule(rkey)['description'],len(tab)]
+                    summary.loc[row] = [rkey,self.rule(rkey)['description'], failed_records, tota_records, 0 if tota_records == 0 else failed_records / tota_records * 100]
                     row = row + 1
                 except:
                     pass
 
         summary.to_excel(writer, 'Summary', index=False)
-        exportData.to_excel(writer,'All (Detail)', index=False)
+        # exportData.to_excel(writer,'All (Detail)', index=False)
 
         for n,t in tabs.items():
             print(n)

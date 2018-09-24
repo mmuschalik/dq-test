@@ -63,7 +63,7 @@ for dkey, dvalue in yml['dataset'].items():
                     logger.info('Results saved for rule: ' + rkey)
     
                 except:
-                    traceback.print_exc()
+                    logger.exception("Exception occured for rule: " + rkey + ". Skipping...")
                     pass
     except:
         traceback.print_exc()
