@@ -152,7 +152,7 @@ class dq:
 
     def exportRules(self):
         exportData = self.data.copy()
-        writer = pd.ExcelWriter(self.dset_name + '_export.xls')
+        writer = pd.ExcelWriter(self.dset_name + '_export.xlsx')
         tabs = {}
         summary = pd.DataFrame(columns=['Rule Name', 'Rule Description', 'Failed Records', 'Total Records', 'Percent'])
         row = 0
